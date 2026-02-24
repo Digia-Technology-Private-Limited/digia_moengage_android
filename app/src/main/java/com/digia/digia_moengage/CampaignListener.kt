@@ -1,30 +1,48 @@
 package com.digia.digia_moengage
 
 import android.app.Application
+import com.digia.digia_moengage.contract.IDigiaMoEListener
+import com.digia.digia_moengage.internal.CampaignStore
 import com.moengage.inapp.MoEInAppHelper
 import com.moengage.inapp.listeners.SelfHandledAvailableListener
 import com.moengage.inapp.model.SelfHandledCampaignData
 
 /**
- * Observes MoEngage self-handled in-app campaigns and delegates processing to [CampaignProcessor].
+ * Observes MoEngage self-handled in-app events, maps the raw KV payload to a typed
+ * [DigiaCampaignModel], and posts it to [CampaignStore].
  *
- * Observer pattern: MoEngage pushes data; this class reacts and immediately hands off — it knows
- * nothing about mapping or rendering.
+ * Observer pattern: MoEngage pushes; this class reacts and immediately hands off to the store. No
+ * rendering logic lives here.
  *
- * @param processor Handles the map → render → notify pipeline.
+ * @param listener Optional host callbacks for received/error events.
  */
 internal class MoECampaignObserver(
-        private val processor: CampaignProcessor,
+        private val listener: IDigiaMoEListener,
 ) : SelfHandledAvailableListener {
 
-    /** Register this observer so MoEngage delivers campaigns to it. */
-    fun register(application: Application) {
-        MoEInAppHelper.getInstance().getSelfHandledInApp(application, this)
+    fun register() {
+        MoEInAppHelper.getInstance().setSelfHandledListener{
+            this
+        }
     }
 
     override fun onSelfHandledAvailable(data: SelfHandledCampaignData?) {
-        // Guard: MoEngage may deliver null when no campaign is available.
         data ?: return
-        processor.process(data)
+
+        val model =
+                CampaignMapper.map(data)
+                        ?: run {
+                            listener.onError(
+                                    "CampaignMapper",
+                                    IllegalArgumentException(
+                                            "Invalid campaign payload: unknown type or missing 'id'. " +
+                                                    "Payload received: ${data.campaign.payload}"
+                                    )
+                            )
+                            return
+                        }
+
+        CampaignStore.post(model)
+        listener.onCampaignReceived(model)
     }
 }

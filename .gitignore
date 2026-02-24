@@ -1,15 +1,77 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+## ── Android / Kotlin / Gradle ────────────────────────────────────────────────
+
+# Compiled application files
+*.apk
+*.ap_
+*.aab
+*.aar
+
+# Files created by the IDE / build system
+/build/
+**/build/
+.gradle/
+/.gradle/
+
+# Local config (should never be committed)
 local.properties
+keystore.properties
+
+# Google Services config (contains sensitive keys — keep out of VCS)
+google-services.json
+
+# Keystore files (NEVER commit signing keys)
+*.jks
+*.keystore
+
+## ── IDEs: Android Studio / IntelliJ / VS Code ───────────────────────────────
+
+# IntelliJ
+*.iml
+.idea/
+.idea/*
+.navigation/
+
+# VS Code
+.vscode/
+
+## ── Native / NDK / CMake ─────────────────────────────────────────────────────
+.externalNativeBuild/
+.cxx/
+captures/
+
+## ── macOS / Misc ────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## ── Logs, temp, secrets ─────────────────────────────────────────────────────
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.*
+
+## ── Misc binaries and tools ─────────────────────────────────────────────────
+*.class
+*.dex
+*.keystore
+
+## Keep the Gradle wrapper scripts and jar (do not ignore)
+!gradlew
+!gradlew.bat
+!gradle/wrapper/gradle-wrapper.jar
+
+## Optional: Ignore local build repo produced by maven-publish in build dir
+/app/build/repo/
+
+## Custom: ignore IntelliJ caches and metadata which are noisy
+.idea/caches/
+.idea/libraries/
+ 
+
+## End of file
