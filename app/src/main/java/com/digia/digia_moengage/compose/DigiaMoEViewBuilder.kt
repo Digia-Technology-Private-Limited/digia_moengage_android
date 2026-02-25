@@ -4,10 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import com.digia.digia_moengage.DigiaMoESDK
 import com.digia.digia_moengage.internal.CampaignStore
 import com.digia.digia_moengage.model.CampaignType
-import com.digia.digiaui.framework.DUIFactory
 import com.digia.digiaui.init.DigiaUIManager
 
 /**
@@ -39,6 +39,7 @@ import com.digia.digiaui.init.DigiaUIManager
 fun DigiaMoEViewBuilder() {
     val ctx by CampaignStore.activeContext.collectAsState()
     val campaign by CampaignStore.activeCampaign.collectAsState()
+    val androidContext = LocalContext.current
 
     // Campaigns whose type is not allowed on the current screen are treated as absent.
     val visible = campaign?.takeIf { it.type in ctx.allowedTypes }
@@ -57,45 +58,46 @@ fun DigiaMoEViewBuilder() {
                 DigiaUIManager.getInstance().dialogManager?.dismiss()
                 DigiaUIManager.getInstance().bottomSheetManager?.dismiss()
             }
-            else ->
-                    when (c.type) {
-                        CampaignType.Dialog ->
-                                DigiaUIManager.getInstance()
-                                        .dialogManager
-                                        ?.show(
-                                                componentId = c.pageId,
-                                                args = c.args,
-                                                // Sync CampaignStore when the dialog is closed
-                                                // natively (barrier tap,
-                                                // back press, or a DUI action) so the store never
-                                                // stays stale.
-                                                onDismiss = { DigiaMoESDK.dismiss() },
-                                        )
-                        CampaignType.BottomSheet ->
-                                DigiaUIManager.getInstance()
-                                        .bottomSheetManager
-                                        ?.show(
-                                                componentId = c.pageId,
-                                                args = c.args,
-                                                onDismiss = { DigiaMoESDK.dismiss() },
-                                        )
-                        CampaignType.Pip ->
-                            // PipGlobalState drives DraggablePipWindow rendered below.
-                        {}
-                        CampaignType.Inline -> {
-                            // Inline content is rendered in the composition tree below.
-                            // No imperative manager call needed.
-                        }
+            else -> {
+                when (c.type) {
+                    CampaignType.Dialog -> {
+                        DigiaUIManager.getInstance()
+                                .dialogManager
+                                ?.show(
+                                        componentId = c.pageId,
+                                        args = c.args,
+                                        onDismiss = { DigiaMoESDK.dismiss(androidContext) },
+                                )
+                        DigiaMoESDK.trackShown(androidContext)
                     }
+                    CampaignType.BottomSheet -> {
+                        DigiaUIManager.getInstance()
+                                .bottomSheetManager
+                                ?.show(
+                                        componentId = c.pageId,
+                                        args = c.args,
+                                        onDismiss = { DigiaMoESDK.dismiss(androidContext) },
+                                )
+                        DigiaMoESDK.trackShown(androidContext)
+                    }
+                    CampaignType.Pip ->
+                        // Not Implemented
+                    {}
+                    CampaignType.Inline -> {
+                        // Inline content is rendered in the composition tree below.
+                        // No imperative manager call needed.
+                    }
+                }
+            }
         }
     }
 
     // ── Inline content — rendered at this composable's position ──────────
-    if (visible?.type == CampaignType.Inline) {
-        DUIFactory.getInstance()
-                .CreateComponent(
-                        componentId = visible.pageId,
-                        args = visible.args,
-                )
-    }
+    //    if (visible?.type == CampaignType.Inline) {
+    //        DUIFactory.getInstance()
+    //                .CreateComponent(
+    //                        componentId = visible.pageId,
+    //                        args = visible.args,
+    //                )
+    //    }
 }

@@ -2,6 +2,7 @@ package com.digia.digia_moengage.internal
 
 import com.digia.digia_moengage.compose.DigiaMoEContext
 import com.digia.digia_moengage.model.DigiaCampaignModel
+import com.moengage.inapp.model.SelfHandledCampaignData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,14 +23,24 @@ internal object CampaignStore {
     /** The campaign currently waiting to be shown, or null when nothing is queued. */
     val activeCampaign: StateFlow<DigiaCampaignModel?> = _activeCampaign.asStateFlow()
 
+    /**
+     * The raw MoEngage campaign data kept in sync with [activeCampaign]. Used by
+     * [DigiaMoESDK.trackShown] / [DigiaMoESDK.trackClicked] / [DigiaMoESDK.dismiss] to report
+     * lifecycle events back to MoEngage.
+     */
+    private val _activeRawCampaign = MutableStateFlow<SelfHandledCampaignData?>(null)
+    val activeRawCampaign: StateFlow<SelfHandledCampaignData?> = _activeRawCampaign.asStateFlow()
+
     /** Post a new campaign — replaces any previously queued one. */
-    fun post(model: DigiaCampaignModel) {
+    fun post(model: DigiaCampaignModel, raw: SelfHandledCampaignData) {
+        _activeRawCampaign.value = raw
         _activeCampaign.value = model
     }
 
     /** Clear the active campaign (user dismissed or page changed). */
     fun dismiss() {
         _activeCampaign.value = null
+        _activeRawCampaign.value = null
     }
 
     // ── Screen context ────────────────────────────────────────────────────────

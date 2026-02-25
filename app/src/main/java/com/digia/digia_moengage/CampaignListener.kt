@@ -1,6 +1,5 @@
 package com.digia.digia_moengage
 
-import android.app.Application
 import com.digia.digia_moengage.contract.IDigiaMoEListener
 import com.digia.digia_moengage.internal.CampaignStore
 import com.moengage.inapp.MoEInAppHelper
@@ -21,9 +20,7 @@ internal class MoECampaignObserver(
 ) : SelfHandledAvailableListener {
 
     fun register() {
-        MoEInAppHelper.getInstance().setSelfHandledListener{
-            this
-        }
+        MoEInAppHelper.getInstance().setSelfHandledListener { this }
     }
 
     override fun onSelfHandledAvailable(data: SelfHandledCampaignData?) {
@@ -42,7 +39,7 @@ internal class MoECampaignObserver(
                             return
                         }
 
-        CampaignStore.post(model)
+        CampaignStore.post(model, data)
         listener.onCampaignReceived(model)
     }
 }

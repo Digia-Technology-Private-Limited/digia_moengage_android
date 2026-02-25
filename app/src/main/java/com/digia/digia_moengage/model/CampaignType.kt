@@ -27,7 +27,7 @@ sealed class CampaignType {
          */
         fun from(value: String?): CampaignType? =
                 when (value?.trim()?.lowercase()) {
-                    "dialog" -> Dialog
+                    "dialog" -> BottomSheet
                     "bottomsheet" -> BottomSheet
                     "overlayvideo" -> Pip
                     "inline" -> Inline

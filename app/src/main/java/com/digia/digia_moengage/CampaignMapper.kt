@@ -39,7 +39,7 @@ internal object CampaignMapper {
                 }
 
         val type = CampaignType.from(json.optString("type")) ?: return null
-        val pageId = json.optString("id").takeIf { it.isNotBlank() } ?: return null
+        val pageId = json.optString("pageId").takeIf { it.isNotBlank() } ?: return null
 
         val args = json.optJSONObject("args")?.toMap() ?: emptyMap()
         val context = json.optJSONObject("context")?.toMap() ?: emptyMap()
