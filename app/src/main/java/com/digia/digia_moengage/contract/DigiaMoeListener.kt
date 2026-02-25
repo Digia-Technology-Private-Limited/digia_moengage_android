@@ -4,14 +4,18 @@ import android.util.Log
 import com.digia.digia_moengage.model.DigiaCampaignModel
 
 /**
- * Internal no-op [IDigiaMoEListener] used when no host listener is supplied.
+ * Internal default [IDigiaMoEListener] used by [com.digia.digia_moengage.DigiaMoESDK] when the host
+ * does not supply their own listener via [com.digia.digia_moengage.DigiaMoESDK.connect].
  *
- * [MoECampaignObserver] already posts every received campaign to [CampaignStore] before calling
- * this listener, so no UI work belongs here. [DigiaMoEViewBuilder] observes [CampaignStore]
- * reactively and handles all show / dismiss transitions via [LaunchedEffect].
+ * ## Distinction from [IDigiaMoEListener.NoOp]
  *
- * Single Responsibility: this object is only responsible for being a valid listener reference —
- * nothing else.
+ * | | [DigiaMoeListener] | [IDigiaMoEListener.NoOp] |
+ * |--------------|--------------------|--------------------------| | Audience | SDK internals |
+ * Public API callers | | onError | Logs via `Log.e` | Silent | | onCampaignReceived | No-op (store
+ * already updated) | No-op |
+ *
+ * Use [IDigiaMoEListener.NoOp] when the host explicitly wants to opt out of ALL callbacks. This
+ * object is the SDK-side default that surfaces errors during development.
  */
 internal object DigiaMoeListener : IDigiaMoEListener {
 

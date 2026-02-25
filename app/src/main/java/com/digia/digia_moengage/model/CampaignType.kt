@@ -3,13 +3,15 @@ package com.digia.digia_moengage.model
 /**
  * Typed representation of what the MoEngage "type" field maps to.
  *
- * Each value determines which Compose container [DigiaMoEViewBuilder] uses to present the Digia
- * page:
+ * Each value determines how [com.digia.digia_moengage.compose.DigiaMoEViewBuilder] or
+ * [com.digia.digia_moengage.compose.DigiaMoEInlineContent] presents the Digia page.
  *
- * | Value | Container | |-----------------|--------------------------------------------| | [Dialog]
- * | `AlertDialog` — modal, blocks interaction | | [BottomSheet] | `ModalBottomSheet` — slides from
- * bottom | | [OverlayVideo] | Full-screen `Box` overlay | | [Inline] | Rendered in-place wherever
- * host puts the composable |
+ * | Value | Payload string(s) | Rendered by | Placement |
+ * |-------------|----------------------|-------------------------------|-------------------------------|
+ * | [Dialog] | `"dialog"` | `DigiaUIManager.dialogManager` | Auto via `DigiaMoEHost` | |
+ * [BottomSheet] | `"bottomsheet"` | `DigiaUIManager.bottomSheetManager` | Auto via `DigiaMoEHost` |
+ * | [Pip] | `"overlayvideo"`, `"pip"` | PIP manager (future) | Auto via `DigiaMoEHost` | | [Inline]
+ * | `"inline"` | `DigiaMoEInlineContent` | Host places explicitly |
  */
 sealed class CampaignType {
     data object Dialog : CampaignType()
@@ -29,7 +31,7 @@ sealed class CampaignType {
                 when (value?.trim()?.lowercase()) {
                     "dialog" -> BottomSheet
                     "bottomsheet" -> BottomSheet
-                    "overlayvideo" -> Pip
+                    "overlayvideo", "pip" -> Pip
                     "inline" -> Inline
                     else -> null
                 }

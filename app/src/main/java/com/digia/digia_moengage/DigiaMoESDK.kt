@@ -3,6 +3,7 @@ package com.digia.digia_moengage
 import android.app.Application
 import android.content.Context
 import com.digia.digia_moengage.compose.DigiaMoEContext
+import com.digia.digia_moengage.contract.DigiaMoeListener
 import com.digia.digia_moengage.contract.IDigiaMoEListener
 import com.digia.digia_moengage.internal.CampaignStore
 import com.digia.digiaui.framework.analytics.AnalyticEvent
@@ -36,11 +37,16 @@ object DigiaMoESDK {
      *
      * @param app Application context — stored internally so the analytics callback can forward
      * click events to MoEngage without requiring callers to pass a Context each time.
+     * @param hostListener Optional [IDigiaMoEListener] for receiving campaign and error callbacks.
+     * When omitted, an internal default listener that logs errors to Logcat is used.
      */
-    fun connect(app: Application) {
+    fun connect(
+            app: Application,
+            hostListener: IDigiaMoEListener? = null,
+    ) {
         if (isConnected) return
         appContext = app.applicationContext
-        val campaignObserver = MoECampaignObserver(IDigiaMoEListener.NoOp)
+        val campaignObserver = MoECampaignObserver(hostListener ?: DigiaMoeListener)
         campaignObserver.register()
         listener = campaignObserver
         registerAnalyticsHook()

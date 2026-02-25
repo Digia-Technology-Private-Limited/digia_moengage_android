@@ -7,8 +7,20 @@ import androidx.compose.ui.Modifier
 import com.digia.digiaui.app.DigiaUIWrapper
 
 /**
- * Activity-level wrapper that surfaces Dialog, BottomSheet, and Pip campaigns **on top of every
- * screen** inside it — automatically, with zero per-screen setup.
+ * Activity-level wrapper that surfaces **overlay** campaigns (Dialog, BottomSheet, Pip) on top of
+ * every screen inside it — automatically, with zero per-screen setup.
+ *
+ * ## Campaign type ownership
+ *
+ * | Type | Rendered by | Who places it |
+ * |-------------|-------------------------------|-------------------------------| | Dialog |
+ * [DigiaUIManager.dialogManager] | This host (automatic) | | BottomSheet |
+ * [DigiaUIManager.bottomSheetManager] | This host (automatic) | | Pip | PIP manager (future) | This
+ * host (automatic) | | **Inline** | **[DigiaMoEInlineContent]** | **Host, at the desired screen
+ * position** |
+ *
+ * [CampaignType.Inline] is **not** managed here. The host must place [DigiaMoEInlineContent]
+ * explicitly at the exact composition-tree location where inline content should appear.
  *
  * ## Architecture
  *
@@ -18,22 +30,28 @@ import com.digia.digiaui.app.DigiaUIWrapper
  *       └── Box(fillMaxSize)
  *            ├── content()     (your entire nav graph)
  *            └── DigiaMoEViewBuilder
- *                 ├── LaunchedEffect(visible) → DigiaUIManager.show/dismiss
- *                 └── DraggablePipWindow      → rendered inline for Pip type
+ *                 └── LaunchedEffect(visible) → DigiaUIManager.show/dismiss
  * ```
  *
  * ## Dismiss on context change
  *
  * [DigiaMoESDK.setContext] → [CampaignStore.setContext] auto-dismisses the active campaign when the
  * page ID changes. [DigiaMoEViewBuilder]'s [LaunchedEffect] reacts to `visible = null` and calls
- * `dismiss()` on every UI layer (dialog manager, sheet manager, PIP state).
+ * `dismiss()` on every overlay UI layer.
  *
  * ## Usage
  *
  * ```kotlin
- * // In Activity.setContent — once, wraps everything:
+ * // Activity.setContent — once, wraps the entire nav graph:
  * DigiaMoEHost {
  *     MyAppNavHost()
+ * }
+ *
+ * // Inside a screen where inline content should appear:
+ * Column {
+ *     HeroBanner()
+ *     DigiaMoEInlineContent()
+ *     ProductList()
  * }
  * ```
  *
@@ -45,16 +63,11 @@ fun DigiaMoEHost(
 ) {
     DigiaUIWrapper {
         Box(modifier = Modifier.fillMaxSize()) {
-            // ── App content (entire nav graph) ────────────────────────────
+            // App content — entire nav graph.
             content()
 
-            // ── Campaign renderer ─────────────────────────────────────────
-            // DigiaMoEViewBuilder observes CampaignStore reactively.
-            // Dialog / BottomSheet → driven via DigiaUIManager (DialogHost /
-            //   BottomSheetHost inside DigiaUIWrapper render them).
-            // Pip  → DraggablePipWindow rendered inline here (Box sibling of
-            //   content so touch pass-through works naturally).
-            // Inline → DUIFactory.CreateComponent rendered inline.
+            // Overlay campaign renderer: Dialog, BottomSheet, Pip.
+            // Inline campaigns are NOT handled here; use DigiaMoEInlineContent instead.
             DigiaMoEViewBuilder()
         }
     }

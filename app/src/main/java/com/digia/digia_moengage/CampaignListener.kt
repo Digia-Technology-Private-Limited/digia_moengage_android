@@ -20,7 +20,7 @@ internal class MoECampaignObserver(
 ) : SelfHandledAvailableListener {
 
     fun register() {
-        MoEInAppHelper.getInstance().setSelfHandledListener { this }
+        MoEInAppHelper.getInstance().setSelfHandledListener ( this )
     }
 
     override fun onSelfHandledAvailable(data: SelfHandledCampaignData?) {
